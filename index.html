@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undangan Wedding Digital</title>
+    <meta name="description" content="Undangan Wedding Digital - Kami mengundang Anda untuk merayakan momen bahagia kami.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Great+Vibes&family=Montserrat:wght@200;300;400;500;600&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              wedding: {
+                primary: '#F9F6EE', // Putih Tulang (Bone White)
+                secondary: '#5D5348', // Muted Bronze
+                accent: '#B8860B', // Elegant Gold
+                text: '#3A352F', // Deep Charcoal Bronze
+                light: '#F5F0E1'  // Crem (Warm Cream)
+              }
+            },
+            fontFamily: {
+              serif: ['"Playfair Display"', 'serif'],
+              script: ['"Great Vibes"', 'cursive'],
+              sans: ['Outfit', 'sans-serif'],
+              montserrat: ['Montserrat', 'sans-serif']
+            }
+          }
+        }
+      }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "framer-motion": "https://esm.sh/framer-motion@^11.11.10",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "path": "https://esm.sh/path@^0.12.7"
+  }
+}
+</script>
+</head>
+<body class="bg-wedding-primary text-wedding-text overflow-x-hidden antialiased">
+    <div id="root"></div>
+        <script src="/index.tsx" type="module"></script>
+</body>
+</html>
