@@ -358,8 +358,24 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
 
   const handleWhatsAppShare = () => {
     const url = getShareUrl();
-    const name = inviteeName.trim() || 'Tamu Undangan';
-    const message = `Tanpa mengurangi rasa hormat, kami bermaksud mengundang ${name} untuk merayakan hari bahagia kami. Berikut adalah link undangan digital kami:\n\n${url}`;
+    const name = inviteeName.trim() || 'Bapak/Ibu/Saudara/i';
+    
+    // Formal and polite Indonesian message template
+    const message = `Assalamu'alaikum Warahmatullahi Wabarakatuh.
+
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i ${name} untuk merayakan hari bahagia kami.
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu.
+
+Informasi lengkap mengenai acara dapat dilihat melalui tautan undangan digital di bawah ini:
+${url}
+
+Atas perhatian dan kehadirannya, kami ucapkan banyak terima kasih.
+Wassalamu'alaikum Warahmatullahi Wabarakatuh.
+
+Kami yang berbahagia,
+${WEDDING_DATA.groom.nickname} & ${WEDDING_DATA.bride.nickname}`;
+
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -372,7 +388,7 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
              Bagikan Undangan
            </h3>
            <p className="text-sm opacity-70 font-serif italic leading-relaxed text-wedding-secondary">
-            Masukkan nama teman/kerabat di bawah ini untuk mengirimkan undangan personal via WhatsApp.
+            Gunakan kolom di bawah ini untuk mengirimkan undangan resmi secara personal via WhatsApp.
           </p>
         </div>
 
@@ -380,7 +396,7 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
           <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-wedding-accent/40 group-focus-within:text-wedding-accent transition-colors" />
           <input 
             type="text" 
-            placeholder="Tulis Nama Penerima..." 
+            placeholder="Ketik Nama Tamu..." 
             value={inviteeName}
             onChange={(e) => setInviteeName(e.target.value)}
             className="w-full pl-12 pr-4 py-4 rounded-2xl border border-wedding-accent/10 focus:border-wedding-accent/40 bg-white/60 font-serif italic outline-none text-wedding-text transition-all focus:bg-white text-sm"
@@ -394,7 +410,7 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
             onClick={handleWhatsAppShare} 
             className="w-full py-5 bg-[#25D366] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg hover:brightness-105"
           >
-            <MessageCircle className="w-4 h-4 fill-white stroke-none" /> Bagikan ke WhatsApp
+            <MessageCircle className="w-4 h-4 fill-white stroke-none" /> Kirim Undangan WhatsApp
           </motion.button>
         </div>
 
@@ -404,7 +420,7 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
             animate={{ opacity: 1, y: 0 }}
             className="text-[9px] text-center text-wedding-accent uppercase tracking-widest font-bold bg-wedding-accent/5 py-2 rounded-xl"
           >
-            Siap dikirim untuk "{inviteeName}"
+            Undangan atas nama "{inviteeName}" siap dikirim
           </motion.p>
         )}
       </div>
@@ -669,7 +685,6 @@ const App: React.FC = () => {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         navigator.clipboard.writeText(WEDDING_DATA.payment.dana.number);
-                        // setCopied(true); // removed to keep code minimal if not using state elsewhere
                       }} 
                       className="w-full py-4 border border-wedding-accent/20 text-wedding-secondary bg-white/70 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-white"
                     >
