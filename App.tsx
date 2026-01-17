@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, Calendar, MapPin, Share2, CheckCircle, Copy, ExternalLink, Wallet, ChevronUp, ChevronDown, UserPlus } from 'lucide-react';
+import { Heart, Calendar, MapPin, CheckCircle, Copy, ExternalLink, Wallet, ChevronUp, ChevronDown, UserPlus, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { WEDDING_DATA } from './constants';
 
@@ -348,7 +348,6 @@ const UnifiedRSVPSection: React.FC<{ defaultName: string }> = ({ defaultName }) 
 };
 
 const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGuestName }) => {
-  const [copied, setCopied] = useState(false);
   const [inviteeName, setInviteeName] = useState('');
   
   const getShareUrl = () => {
@@ -357,24 +356,12 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
     return `${baseUrl}?to=${inviteeName.trim().replace(/\s+/g, '_')}`;
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(getShareUrl());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleShare = async () => {
+  const handleWhatsAppShare = () => {
     const url = getShareUrl();
     const name = inviteeName.trim() || 'Tamu Undangan';
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Undangan Wedding ${WEDDING_DATA.groom.nickname} & ${WEDDING_DATA.bride.nickname}`,
-          text: `Tanpa mengurangi rasa hormat, kami bermaksud mengundang ${name} untuk merayakan hari bahagia kami.`,
-          url: url,
-        });
-      } catch (err) { console.error('Error sharing:', err); }
-    } else { handleCopy(); }
+    const message = `Tanpa mengurangi rasa hormat, kami bermaksud mengundang ${name} untuk merayakan hari bahagia kami. Berikut adalah link undangan digital kami:\n\n${url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -382,10 +369,10 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
       <div className="max-w-md mx-auto p-8 md:p-10 bg-white/40 rounded-[3rem] border border-wedding-accent/10 shadow-xl backdrop-blur-md flex flex-col gap-6 relative overflow-hidden">
         <div className="space-y-3">
            <h3 className="font-serif text-xl md:text-2xl italic text-wedding-secondary">
-             Bagikan Kabar Bahagia
+             Bagikan Undangan
            </h3>
            <p className="text-sm opacity-70 font-serif italic leading-relaxed text-wedding-secondary">
-            Ingin mengundang teman lain secara personal? Masukkan nama mereka di bawah ini untuk membuat tautan khusus.
+            Masukkan nama teman/kerabat di bawah ini untuk mengirimkan undangan personal via WhatsApp.
           </p>
         </div>
 
@@ -393,30 +380,21 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
           <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-wedding-accent/40 group-focus-within:text-wedding-accent transition-colors" />
           <input 
             type="text" 
-            placeholder="Tulis Nama Tamu..." 
+            placeholder="Tulis Nama Penerima..." 
             value={inviteeName}
             onChange={(e) => setInviteeName(e.target.value)}
             className="w-full pl-12 pr-4 py-4 rounded-2xl border border-wedding-accent/10 focus:border-wedding-accent/40 bg-white/60 font-serif italic outline-none text-wedding-text transition-all focus:bg-white text-sm"
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col gap-4">
           <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleShare} 
-            className="flex-1 py-4 bg-wedding-secondary text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all hover:bg-wedding-accent shadow-lg"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleWhatsAppShare} 
+            className="w-full py-5 bg-[#25D366] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg hover:brightness-105"
           >
-            <Share2 className="w-4 h-4" /> Bagikan
-          </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleCopy} 
-            className={`flex-1 py-4 border rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all ${copied ? 'bg-green-50 border-green-200 text-green-600' : 'border-wedding-accent/20 text-wedding-secondary bg-white/50 hover:bg-white shadow-sm'}`}
-          >
-            {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Tersalin' : 'Salin Tautan'}
+            <MessageCircle className="w-4 h-4 fill-white stroke-none" /> Bagikan ke WhatsApp
           </motion.button>
         </div>
 
@@ -426,7 +404,7 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
             animate={{ opacity: 1, y: 0 }}
             className="text-[9px] text-center text-wedding-accent uppercase tracking-widest font-bold bg-wedding-accent/5 py-2 rounded-xl"
           >
-            Tautan personal untuk "{inviteeName}" siap dibagikan!
+            Siap dikirim untuk "{inviteeName}"
           </motion.p>
         )}
       </div>
@@ -437,7 +415,6 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
 const App: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showScrollUp, setShowScrollUp] = useState(false);
-  const [copied, setCopied] = useState(false);
   const guestName = (new URLSearchParams(window.location.search).get('to') || 'Tamu Undangan').replace(/_/g, ' ');
 
   const mempRef = useRef(null);
@@ -692,13 +669,11 @@ const App: React.FC = () => {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         navigator.clipboard.writeText(WEDDING_DATA.payment.dana.number);
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
+                        // setCopied(true); // removed to keep code minimal if not using state elsewhere
                       }} 
-                      className={`w-full py-4 border rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${copied ? 'bg-green-50 border-green-200 text-green-600' : 'border-wedding-accent/20 text-wedding-secondary bg-white/70 hover:bg-white'}`}
+                      className="w-full py-4 border border-wedding-accent/20 text-wedding-secondary bg-white/70 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-white"
                     >
-                      {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      {copied ? 'Tersalin' : 'Salin Nomor DANA'}
+                      <Copy className="w-4 h-4" /> Salin Nomor DANA
                     </motion.button>
                     <motion.a 
                       whileHover={{ scale: 1.02 }}
