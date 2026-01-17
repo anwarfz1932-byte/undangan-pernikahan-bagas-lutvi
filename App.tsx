@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, Calendar, MapPin, Share2, CheckCircle, Copy, ExternalLink, Wallet, ChevronUp, ChevronDown } from 'lucide-react';
+import { Heart, Calendar, MapPin, Share2, CheckCircle, Copy, ExternalLink, Wallet, ChevronUp, ChevronDown, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { WEDDING_DATA } from './constants';
 
@@ -347,23 +347,31 @@ const UnifiedRSVPSection: React.FC<{ defaultName: string }> = ({ defaultName }) 
   );
 };
 
-const PersonalizedShare: React.FC = () => {
+const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGuestName }) => {
   const [copied, setCopied] = useState(false);
-  const shareUrl = window.location.href;
+  const [inviteeName, setInviteeName] = useState('');
+  
+  const getShareUrl = () => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    if (!inviteeName.trim()) return baseUrl;
+    return `${baseUrl}?to=${inviteeName.trim().replace(/\s+/g, '_')}`;
+  };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl);
+    navigator.clipboard.writeText(getShareUrl());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShare = async () => {
+    const url = getShareUrl();
+    const name = inviteeName.trim() || 'Tamu Undangan';
     if (navigator.share) {
       try {
         await navigator.share({
           title: `Undangan Wedding ${WEDDING_DATA.groom.nickname} & ${WEDDING_DATA.bride.nickname}`,
-          text: `Tanpa mengurangi rasa hormat, kami bermaksud mengundang Anda untuk merayakan hari bahagia kami.`,
-          url: shareUrl,
+          text: `Tanpa mengurangi rasa hormat, kami bermaksud mengundang ${name} untuk merayakan hari bahagia kami.`,
+          url: url,
         });
       } catch (err) { console.error('Error sharing:', err); }
     } else { handleCopy(); }
@@ -371,8 +379,27 @@ const PersonalizedShare: React.FC = () => {
 
   return (
     <RevealSection direction="up">
-      <div className="max-w-md mx-auto p-10 bg-white/40 rounded-[3rem] border border-wedding-accent/10 shadow-xl backdrop-blur-md flex flex-col gap-6">
-        <p className="text-sm opacity-70 font-serif italic leading-relaxed text-wedding-secondary">Terima kasih banyak jika berkenan menyebarkan kabar bahagia ini.</p>
+      <div className="max-w-md mx-auto p-8 md:p-10 bg-white/40 rounded-[3rem] border border-wedding-accent/10 shadow-xl backdrop-blur-md flex flex-col gap-6 relative overflow-hidden">
+        <div className="space-y-3">
+           <h3 className="font-serif text-xl md:text-2xl italic text-wedding-secondary">
+             Bagikan Kabar Bahagia
+           </h3>
+           <p className="text-sm opacity-70 font-serif italic leading-relaxed text-wedding-secondary">
+            Ingin mengundang teman lain secara personal? Masukkan nama mereka di bawah ini untuk membuat tautan khusus.
+          </p>
+        </div>
+
+        <div className="relative group">
+          <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-wedding-accent/40 group-focus-within:text-wedding-accent transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Tulis Nama Tamu..." 
+            value={inviteeName}
+            onChange={(e) => setInviteeName(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 rounded-2xl border border-wedding-accent/10 focus:border-wedding-accent/40 bg-white/60 font-serif italic outline-none text-wedding-text transition-all focus:bg-white text-sm"
+          />
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4">
           <motion.button 
             whileHover={{ scale: 1.05 }}
@@ -392,6 +419,16 @@ const PersonalizedShare: React.FC = () => {
             {copied ? 'Tersalin' : 'Salin Tautan'}
           </motion.button>
         </div>
+
+        {inviteeName && (
+          <motion.p 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[9px] text-center text-wedding-accent uppercase tracking-widest font-bold bg-wedding-accent/5 py-2 rounded-xl"
+          >
+            Tautan personal untuk "{inviteeName}" siap dibagikan!
+          </motion.p>
+        )}
       </div>
     </RevealSection>
   );
@@ -688,7 +725,7 @@ const App: React.FC = () => {
               <RevealSection direction="up" className="mb-6">
                 <h2 className="font-serif text-2xl md:text-3xl text-wedding-secondary italic">Bagikan Kabar Bahagia</h2>
               </RevealSection>
-              <PersonalizedShare />
+              <PersonalizedShare currentGuestName={guestName} />
             </Section>
 
             <footer className="py-32 bg-wedding-light text-wedding-secondary text-center relative overflow-hidden border-t border-wedding-accent/10">
