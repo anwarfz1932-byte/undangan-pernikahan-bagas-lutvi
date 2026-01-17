@@ -24,7 +24,6 @@ const RevealSection: React.FC<{ children: React.ReactNode; className?: string; d
       transition: { 
         duration: 0.8, 
         delay: delay, 
-        // Fix: Added 'as any' to solve Framer Motion transition easing type mismatch for cubic-bezier array
         ease: [0.16, 1, 0.3, 1] as any 
       }
     }
@@ -316,4 +315,421 @@ const UnifiedRSVPSection: React.FC<{ defaultName: string }> = ({ defaultName }) 
                   type="button"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setData({ ...data, status: opt.id as any })}
-                  className={`p-4 rounded-2xl border text-[10px] uppercase font-bold tracking-widest transition-all ${data.status === opt.id ? 'border-wedding-accent bg-
+                  className={`p-4 rounded-2xl border text-[10px] uppercase font-bold tracking-widest transition-all ${data.status === opt.id ? 'border-wedding-accent bg-wedding-accent/10 ring-2 ring-wedding-accent/20' : 'border-wedding-accent/10 bg-white/50 hover:bg-white'}`}
+                >
+                  {opt.label}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="block font-serif text-wedding-secondary font-medium italic ml-1">Doa Restu</label>
+            <textarea 
+              placeholder="Tulis doa restu Anda..." 
+              rows={4} 
+              value={data.message}
+              onChange={(e) => setData({ ...data, message: e.target.value })}
+              className="w-full p-5 rounded-[1.5rem] ring-1 ring-wedding-accent/10 focus:ring-2 focus:ring-wedding-accent/40 bg-white/60 font-sans italic outline-none text-wedding-text transition-all focus:bg-white"
+              required
+            />
+          </div>
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={!data.status || !data.name || !data.message}
+            className="w-full py-5 rounded-full bg-wedding-secondary text-white font-sans text-[10px] font-bold uppercase tracking-[0.4em] shadow-xl disabled:opacity-30 transition-all hover:bg-wedding-accent"
+          >
+            Kirim Konfirmasi
+          </motion.button>
+        </form>
+      </div>
+    </RevealSection>
+  );
+};
+
+const PersonalizedShare: React.FC = () => {
+  const [copied, setCopied] = useState(false);
+  const shareUrl = window.location.href;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Undangan Wedding ${WEDDING_DATA.groom.nickname} & ${WEDDING_DATA.bride.nickname}`,
+          text: `Tanpa mengurangi rasa hormat, kami bermaksud mengundang Anda untuk merayakan hari bahagia kami.`,
+          url: shareUrl,
+        });
+      } catch (err) { console.error('Error sharing:', err); }
+    } else { handleCopy(); }
+  };
+
+  return (
+    <RevealSection direction="up">
+      <div className="max-w-md mx-auto p-10 bg-white/40 rounded-[3rem] border border-wedding-accent/10 shadow-xl backdrop-blur-md flex flex-col gap-6">
+        <p className="text-sm opacity-70 font-serif italic leading-relaxed text-wedding-secondary">Terima kasih banyak jika berkenan menyebarkan kabar bahagia ini.</p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleShare} 
+            className="flex-1 py-4 bg-wedding-secondary text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all hover:bg-wedding-accent shadow-lg"
+          >
+            <Share2 className="w-4 h-4" /> Bagikan
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleCopy} 
+            className={`flex-1 py-4 border rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all ${copied ? 'bg-green-50 border-green-200 text-green-600' : 'border-wedding-accent/20 text-wedding-secondary bg-white/50 hover:bg-white shadow-sm'}`}
+          >
+            {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'Tersalin' : 'Salin Tautan'}
+          </motion.button>
+        </div>
+      </div>
+    </RevealSection>
+  );
+};
+
+const App: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showScrollUp, setShowScrollUp] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const guestName = (new URLSearchParams(window.location.search).get('to') || 'Tamu Undangan').replace(/_/g, ' ');
+
+  const mempRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: mempRef,
+    offset: ["start end", "end start"]
+  });
+  const yParallax = useTransform(scrollYProgress, [0, 1], [-100, 100]);
+
+  useEffect(() => {
+    const handleScroll = () => setShowScrollUp(window.scrollY > 800);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  return (
+    <div className="relative font-sans text-wedding-text bg-wedding-primary overflow-x-hidden selection:bg-wedding-accent/20 min-h-screen">
+      <BatikBackground />
+      
+      <AnimatePresence mode="wait">
+        {!isOpen ? (
+          <motion.div 
+            key="cover"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as any }}
+            className="fixed inset-0 z-[100] h-screen w-full flex flex-col items-center justify-center bg-wedding-primary text-center p-8 overflow-hidden"
+          >
+            <LightSweep />
+            <FallingPetals />
+            <DecorativeFrame />
+            
+            <div className="z-10 space-y-12 max-w-lg w-full">
+              <motion.div 
+                animate={{ rotate: 360 }} 
+                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+              >
+                <FlowerOrnament className="w-16 h-16 md:w-24 md:h-24 mb-6 opacity-20" />
+              </motion.div>
+              <div className="space-y-6">
+                <motion.h4 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 0.4, y: 0 }}
+                  className="font-sans uppercase tracking-[0.6em] text-[10px] font-bold"
+                >Wedding Celebration</motion.h4>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3, duration: 1 }}
+                >
+                  <h1 className="font-script text-6xl md:text-[10rem] text-wedding-secondary leading-none">
+                    {WEDDING_DATA.groom.nickname} & {WEDDING_DATA.bride.nickname}
+                  </h1>
+                </motion.div>
+              </div>
+              
+              <motion.div 
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: '100%' }}
+                transition={{ delay: 0.6, duration: 1.5 }}
+                className="py-8 border-y border-wedding-accent/10 max-w-xs mx-auto overflow-hidden"
+              >
+                <p className="font-sans text-[10px] uppercase tracking-[0.4em] text-wedding-secondary/40 mb-4 font-bold">Spesial Untuk:</p>
+                <h3 className="font-serif text-3xl md:text-5xl font-medium italic text-wedding-secondary">{guestName}</h3>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="relative"
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-wedding-accent/20 rounded-full blur-xl"
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setIsOpen(true);
+                    window.scrollTo(0, 0);
+                  }} 
+                  className="relative flex items-center gap-4 mx-auto bg-wedding-secondary text-white px-12 py-5 rounded-full font-sans text-[10px] font-bold uppercase tracking-[0.4em] shadow-2xl transition-all hover:bg-wedding-accent"
+                >
+                  <Heart className="w-4 h-4 fill-white stroke-none" /> Buka Undangan
+                </motion.button>
+              </motion.div>
+            </div>
+            
+            <BatikCorner position="top-left" animated />
+            <BatikCorner position="top-right" animated />
+            <BatikCorner position="bottom-left" animated />
+            <BatikCorner position="bottom-right" animated />
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="main"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+          >
+            <motion.button 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: showScrollUp ? 1 : 0 }}
+              onClick={scrollToTop}
+              className="fixed bottom-8 right-8 z-50 p-4 bg-wedding-secondary text-white rounded-full shadow-2xl transition-all"
+            >
+              <ChevronUp className="w-6 h-6" />
+            </motion.button>
+
+            <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 relative bg-wedding-primary py-24">
+              <FloatingDecorations />
+              <BatikCorner position="top-left" animated />
+              <BatikCorner position="top-right" animated />
+              <div className="space-y-10 relative">
+                <div className="space-y-8">
+                  <p className="font-sans uppercase tracking-[1em] text-[9px] text-wedding-secondary/30 font-bold">Wedding</p>
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1.5 }}
+                  >
+                    <h1 className="font-script text-[5.5rem] md:text-[12rem] text-wedding-secondary leading-[0.7] mb-4">{WEDDING_DATA.groom.nickname}</h1>
+                    <div className="font-serif text-2xl md:text-3xl italic text-wedding-accent my-4 animate-pulse">&</div>
+                    <h1 className="font-script text-[5.5rem] md:text-[12rem] text-wedding-secondary leading-[0.7]">{WEDDING_DATA.bride.nickname}</h1>
+                  </motion.div>
+                  <BatikDivider animated />
+                  <p className="font-serif text-xl md:text-2xl tracking-[0.4em] text-wedding-secondary font-light">31 JANUARI 2026</p>
+                </div>
+              </div>
+            </section>
+
+            <Section className="bg-wedding-light relative">
+              <FloatingDecorations />
+              <RevealSection className="max-w-2xl mx-auto italic font-serif text-xl md:text-3xl text-wedding-secondary leading-relaxed space-y-8">
+                <p className="tracking-tight">"{WEDDING_DATA.quote.text}"</p>
+                <BatikDivider animated />
+                <p className="font-sans font-bold text-[9px] md:text-[10px] tracking-[0.5em] uppercase text-wedding-accent">— {WEDDING_DATA.quote.source}</p>
+              </RevealSection>
+            </Section>
+
+            <section ref={mempRef} className="bg-wedding-primary py-32 relative overflow-hidden text-center">
+              <motion.div 
+                style={{ y: yParallax, opacity: 0.03 }}
+                className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none"
+              >
+                <FlowerOrnament className="w-[150%] md:w-[80%] h-auto rotate-12" />
+              </motion.div>
+
+              <div className="max-w-4xl mx-auto z-10 relative">
+                <RevealSection direction="up" className="mb-24 space-y-6">
+                  <p className="font-sans text-[10px] uppercase tracking-[0.8em] text-wedding-accent font-bold">Assalamualaikum Warahmatullahi Wabarakatuh</p>
+                  <p className="max-w-lg mx-auto text-sm md:text-base opacity-60 leading-relaxed font-serif italic px-4">Dengan memohon ridho Allah SWT, kami mengundang Anda untuk merayakan wedding suci kami:</p>
+                  <BatikDivider animated />
+                </RevealSection>
+
+                <div className="space-y-40 max-w-5xl mx-auto px-6 relative">
+                  <RevealSection direction="left" className="space-y-12">
+                    <h3 className="font-script text-5xl md:text-[9rem] text-wedding-secondary leading-none">{WEDDING_DATA.groom.fullName}</h3>
+                    <div className="space-y-6">
+                      <p className="font-sans text-[9px] text-wedding-secondary/40 tracking-[0.5em] uppercase font-bold">Putra Dari</p>
+                      <div className="font-serif text-lg md:text-2xl text-wedding-secondary/80 space-y-1 italic font-medium tracking-tight">
+                        <p>{WEDDING_DATA.groom.father}</p>
+                        <p className="text-sm text-wedding-accent/40 font-sans not-italic font-light tracking-[0.3em] uppercase">dan</p>
+                        <p>{WEDDING_DATA.groom.mother}</p>
+                      </div>
+                    </div>
+                  </RevealSection>
+
+                  <BatikDivider animated />
+
+                  <RevealSection direction="right" className="space-y-12">
+                    <h3 className="font-script text-5xl md:text-[9rem] text-wedding-secondary leading-none">{WEDDING_DATA.bride.fullName}</h3>
+                    <div className="space-y-6">
+                      <p className="font-sans text-[9px] text-wedding-secondary/40 tracking-[0.5em] uppercase font-bold">Putri Dari</p>
+                      <div className="font-serif text-lg md:text-2xl text-wedding-secondary/80 space-y-1 italic font-medium tracking-tight">
+                        <p>{WEDDING_DATA.bride.father}</p>
+                        <p className="text-sm text-wedding-accent/40 font-sans not-italic font-light tracking-[0.3em] uppercase">dan</p>
+                        <p>{WEDDING_DATA.bride.mother}</p>
+                      </div>
+                    </div>
+                  </RevealSection>
+                </div>
+              </div>
+            </section>
+
+            <Section className="bg-wedding-light relative">
+              <FloatingDecorations />
+              <BatikCorner position="bottom-right" animated />
+              <RevealSection direction="up" className="mb-12">
+                <h2 className="font-serif text-3xl md:text-5xl text-wedding-secondary italic mb-2">Momen Bahagia</h2>
+                <Countdown />
+              </RevealSection>
+              <div className="grid md:grid-cols-2 gap-10 mt-20">
+                {[
+                  { title: 'Akad Nikah', ...WEDDING_DATA.event.akad, direction: 'left' },
+                  { title: 'Resepsi', ...WEDDING_DATA.event.resepsi, direction: 'right' }
+                ].map((ev, i) => (
+                  <RevealSection key={i} direction={ev.direction as any} delay={i * 0.2}>
+                    <motion.div 
+                      whileHover={{ y: -10 }}
+                      className="bg-white/40 p-10 md:p-16 rounded-[4rem] border border-wedding-accent/10 shadow-xl backdrop-blur-md relative overflow-hidden transition-all duration-500 hover:bg-white"
+                    >
+                      <Calendar className="w-8 h-8 mx-auto text-wedding-accent mb-6 stroke-[1]" />
+                      <h3 className="font-serif text-2xl font-bold text-wedding-secondary mb-6 italic">{ev.title}</h3>
+                      <div className="space-y-4 text-wedding-secondary/60">
+                        <p className="font-medium">{ev.dayDate}</p>
+                        <p className="font-medium">{ev.time}</p>
+                        <div className="pt-6 border-t border-wedding-accent/15">
+                          <p className="font-serif italic text-xl md:text-2xl text-wedding-secondary mb-2">{ev.location}</p>
+                          <p className="text-[10px] leading-relaxed opacity-60 uppercase tracking-wider px-4">{ev.address}</p>
+                        </div>
+                      </div>
+                      <motion.a 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        href={ev.mapLink} 
+                        target="_blank" 
+                        className="mt-10 inline-flex items-center gap-3 bg-wedding-secondary text-white px-10 py-4 rounded-full text-[9px] font-bold uppercase tracking-[0.3em] shadow-xl"
+                      >
+                         <MapPin className="w-3 h-3" /> Peta Lokasi
+                      </motion.a>
+                    </motion.div>
+                  </RevealSection>
+                ))}
+              </div>
+            </Section>
+
+            <Section className="bg-wedding-primary">
+              <FloatingDecorations />
+              <RevealSection direction="up" className="mb-8">
+                <h2 className="font-serif text-3xl md:text-5xl text-wedding-secondary italic">Tanda Kasih</h2>
+              </RevealSection>
+              <RevealSection direction="scale">
+                <p className="max-w-md mx-auto text-sm opacity-60 mb-10 px-4">Kado paling utama adalah doa restu Anda. Namun jika ingin memberikan tanda kasih, dapat melalui:</p>
+                <div className="max-w-md mx-auto p-10 md:p-14 bg-white/40 rounded-[4rem] border border-wedding-accent/15 shadow-2xl space-y-12 backdrop-blur-lg">
+                  <div className="flex flex-col items-center gap-6">
+                    <Wallet className="w-14 h-14 text-wedding-accent stroke-[1]" />
+                    <div className="space-y-2">
+                      <p className="font-sans text-[9px] uppercase tracking-[0.4em] font-bold text-wedding-secondary/30">Transfer DANA</p>
+                      <h3 className="font-serif text-3xl md:text-4xl font-bold text-wedding-secondary tabular-nums">{WEDDING_DATA.payment.dana.number}</h3>
+                      <p className="text-xs md:text-sm text-wedding-secondary/60 italic">a.n {WEDDING_DATA.payment.dana.accountName}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(WEDDING_DATA.payment.dana.number);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }} 
+                      className={`w-full py-4 border rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${copied ? 'bg-green-50 border-green-200 text-green-600' : 'border-wedding-accent/20 text-wedding-secondary bg-white/70 hover:bg-white'}`}
+                    >
+                      {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copied ? 'Tersalin' : 'Salin Nomor DANA'}
+                    </motion.button>
+                    <motion.a 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      href={WEDDING_DATA.payment.dana.link} 
+                      target="_blank" 
+                      className="w-full py-5 bg-wedding-secondary text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] shadow-xl flex items-center justify-center gap-3"
+                    >
+                      <ExternalLink className="w-3 h-3" /> Kirim via DANA
+                    </motion.a>
+                  </div>
+                </div>
+              </RevealSection>
+            </Section>
+
+            <Section className="bg-wedding-light relative">
+              <RevealSection direction="up" className="mb-8">
+                <h2 className="font-serif text-3xl md:text-5xl text-wedding-secondary italic">Buku Tamu</h2>
+              </RevealSection>
+              <UnifiedRSVPSection defaultName={guestName} />
+            </Section>
+
+            <Section className="bg-wedding-primary pb-32">
+              <RevealSection direction="up" className="mb-6">
+                <h2 className="font-serif text-2xl md:text-3xl text-wedding-secondary italic">Bagikan Kabar Bahagia</h2>
+              </RevealSection>
+              <PersonalizedShare />
+            </Section>
+
+            <footer className="py-32 bg-wedding-light text-wedding-secondary text-center relative overflow-hidden border-t border-wedding-accent/10">
+              <FloatingDecorations />
+              <BatikCorner position="top-left" animated />
+              <BatikCorner position="top-right" animated />
+              <div className="relative z-10">
+                <motion.h2 
+                  whileInView={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                  className="font-script text-7xl md:text-[11rem] mb-10 text-wedding-accent"
+                >{WEDDING_DATA.groom.nickname} & {WEDDING_DATA.bride.nickname}</motion.h2>
+                <BatikDivider animated />
+                <p className="font-serif italic text-lg opacity-75 px-10 max-w-xl mx-auto leading-relaxed">Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kami.</p>
+                <div className="mt-20">
+                  <FlowerOrnament className="w-12 h-12 mb-6 opacity-20" />
+                  <p className="font-sans text-[8px] opacity-30 tracking-[0.5em] uppercase font-bold">Wassalamualaikum Warahmatullahi Wabarakatuh</p>
+                </div>
+              </div>
+            </footer>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root { 
+          scroll-behavior: smooth;
+          -webkit-tap-highlight-color: transparent;
+        }
+        body { 
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f9f6ee; }
+        ::-webkit-scrollbar-thumb { background: #dcd7ca; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #B8860B; }
+      `}} />
+    </div>
+  );
+};
+
+export default App;
