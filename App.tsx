@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, Calendar, MapPin, CheckCircle, Copy, ExternalLink, Wallet, ChevronUp, ChevronDown, UserPlus, MessageCircle } from 'lucide-react';
+import { Heart, Calendar, MapPin, CheckCircle, Copy, ExternalLink, Wallet, ChevronUp, UserPlus, MessageCircle, Link } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { WEDDING_DATA } from './constants';
 
@@ -349,6 +349,7 @@ const UnifiedRSVPSection: React.FC<{ defaultName: string }> = ({ defaultName }) 
 
 const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGuestName }) => {
   const [inviteeName, setInviteeName] = useState('');
+  const [copied, setCopied] = useState(false);
   
   const getShareUrl = () => {
     const baseUrl = window.location.origin + window.location.pathname;
@@ -356,11 +357,17 @@ const PersonalizedShare: React.FC<{ currentGuestName: string }> = ({ currentGues
     return `${baseUrl}?to=${inviteeName.trim().replace(/\s+/g, '_')}`;
   };
 
+  const handleCopyLink = () => {
+    const url = getShareUrl();
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
   const handleWhatsAppShare = () => {
     const url = getShareUrl();
     const name = inviteeName.trim() || 'Bapak/Ibu/Saudara/i';
     
-    // Formal and polite Indonesian message template
     const message = `Assalamu'alaikum Warahmatullahi Wabarakatuh.
 
 Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i ${name} untuk merayakan hari bahagia kami.
@@ -388,7 +395,7 @@ ${WEDDING_DATA.groom.nickname} & ${WEDDING_DATA.bride.nickname}`;
              Bagikan Undangan
            </h3>
            <p className="text-sm opacity-70 font-serif italic leading-relaxed text-wedding-secondary">
-            Gunakan kolom di bawah ini untuk mengirimkan undangan resmi secara personal via WhatsApp.
+            Gunakan kolom di bawah ini untuk mengirimkan undangan resmi secara personal.
           </p>
         </div>
 
@@ -403,14 +410,24 @@ ${WEDDING_DATA.groom.nickname} & ${WEDDING_DATA.bride.nickname}`;
           />
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleWhatsAppShare} 
             className="w-full py-5 bg-[#25D366] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg hover:brightness-105"
           >
-            <MessageCircle className="w-4 h-4 fill-white stroke-none" /> Kirim Undangan WhatsApp
+            <MessageCircle className="w-4 h-4 fill-white stroke-none" /> WhatsApp
+          </motion.button>
+          
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCopyLink} 
+            className={`w-full py-5 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-md ${copied ? 'bg-green-50 border border-green-200 text-green-600' : 'bg-wedding-secondary text-white'}`}
+          >
+            {copied ? <CheckCircle className="w-4 h-4" /> : <Link className="w-4 h-4" />}
+            {copied ? 'Tersalin' : 'Salin Link'}
           </motion.button>
         </div>
 
@@ -427,6 +444,52 @@ ${WEDDING_DATA.groom.nickname} & ${WEDDING_DATA.bride.nickname}`;
     </RevealSection>
   );
 };
+
+const PaymentCard: React.FC<{ account: any }> = ({ account }) => {
+  const [copied, setCopied] = useState(false);
+  
+  return (
+    <motion.div 
+      whileHover={{ y: -5 }}
+      className="p-8 md:p-10 bg-white/60 rounded-[3rem] border border-wedding-accent/15 shadow-xl backdrop-blur-md flex flex-col justify-between h-full transition-all duration-500 hover:shadow-2xl hover:border-wedding-accent/30"
+    >
+      <div className="flex flex-col items-center gap-6">
+        <div className="p-4 bg-wedding-accent/5 rounded-2xl border border-wedding-accent/10">
+          <Wallet className="w-10 h-10 text-wedding-accent stroke-[1]" />
+        </div>
+        <div className="space-y-2 text-center">
+          <p className="font-sans text-[10px] uppercase tracking-[0.4em] font-bold text-wedding-secondary/30">Transfer {account.bankName}</p>
+          <h3 className="font-serif text-2xl md:text-3xl font-bold text-wedding-secondary tabular-nums tracking-tighter">{account.number}</h3>
+          <p className="text-xs md:text-sm text-wedding-secondary/60 italic font-medium">a.n {account.accountName}</p>
+        </div>
+      </div>
+      <div className="flex flex-col gap-3 mt-8">
+        <motion.button 
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => {
+            navigator.clipboard.writeText(account.number);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }} 
+          className={`w-full py-4 border rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${copied ? 'bg-green-50 border-green-200 text-green-600' : 'border-wedding-accent/20 text-wedding-secondary bg-white/70 hover:bg-white'}`}
+        >
+          {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          {copied ? 'Tersalin' : `Salin No. ${account.bankName}`}
+        </motion.button>
+        <motion.a 
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          href={account.link} 
+          target="_blank" 
+          className="w-full py-5 bg-wedding-secondary text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] shadow-lg flex items-center justify-center gap-3 transition-all hover:bg-wedding-accent"
+        >
+          <ExternalLink className="w-3 h-3" /> Kirim via {account.bankName}
+        </motion.a>
+      </div>
+    </motion.div>
+  );
+}
 
 const App: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -669,37 +732,11 @@ const App: React.FC = () => {
                 <h2 className="font-serif text-3xl md:text-5xl text-wedding-secondary italic">Tanda Kasih</h2>
               </RevealSection>
               <RevealSection direction="scale">
-                <p className="max-w-md mx-auto text-sm opacity-60 mb-10 px-4">Kado paling utama adalah doa restu Anda. Namun jika ingin memberikan tanda kasih, dapat melalui:</p>
-                <div className="max-w-md mx-auto p-10 md:p-14 bg-white/40 rounded-[4rem] border border-wedding-accent/15 shadow-2xl space-y-12 backdrop-blur-lg">
-                  <div className="flex flex-col items-center gap-6">
-                    <Wallet className="w-14 h-14 text-wedding-accent stroke-[1]" />
-                    <div className="space-y-2">
-                      <p className="font-sans text-[9px] uppercase tracking-[0.4em] font-bold text-wedding-secondary/30">Transfer DANA</p>
-                      <h3 className="font-serif text-3xl md:text-4xl font-bold text-wedding-secondary tabular-nums">{WEDDING_DATA.payment.dana.number}</h3>
-                      <p className="text-xs md:text-sm text-wedding-secondary/60 italic">a.n {WEDDING_DATA.payment.dana.accountName}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        navigator.clipboard.writeText(WEDDING_DATA.payment.dana.number);
-                      }} 
-                      className="w-full py-4 border border-wedding-accent/20 text-wedding-secondary bg-white/70 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-white"
-                    >
-                      <Copy className="w-4 h-4" /> Salin Nomor DANA
-                    </motion.button>
-                    <motion.a 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      href={WEDDING_DATA.payment.dana.link} 
-                      target="_blank" 
-                      className="w-full py-5 bg-wedding-secondary text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] shadow-xl flex items-center justify-center gap-3"
-                    >
-                      <ExternalLink className="w-3 h-3" /> Kirim via DANA
-                    </motion.a>
-                  </div>
+                <p className="max-w-md mx-auto text-sm opacity-60 mb-10 px-4 italic leading-relaxed font-serif">Kado paling utama adalah doa restu Anda. Namun jika ingin memberikan tanda kasih, dapat melalui:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-4 mt-12">
+                  {WEDDING_DATA.payment.accounts.map((account, idx) => (
+                    <PaymentCard key={idx} account={account} />
+                  ))}
                 </div>
               </RevealSection>
             </Section>

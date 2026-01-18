@@ -1,4 +1,3 @@
-
 export const WEDDING_DATA = {
   groom: {
     nickname: "Bagas",
@@ -32,11 +31,20 @@ export const WEDDING_DATA = {
     }
   },
   payment: {
-    dana: {
-      number: "089646703900",
-      accountName: "Bagas Dwi Septyan",
-      link: "https://link.dana.id/send-money?phone=089646703900"
-    }
+    accounts: [
+      {
+        bankName: "DANA",
+        number: "089646703900",
+        accountName: "Bagas Dwi Septyan",
+        link: "https://link.dana.id/send-money?phone=089646703900"
+      },
+      {
+        bankName: "DANA",
+        number: "085701224117",
+        accountName: "Lutvi Amalia",
+        link: "https://link.dana.id/send-money?phone=085701224117"
+      }
+    ]
   },
   quote: {
     text: "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang.",
